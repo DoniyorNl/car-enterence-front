@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Dashboard from './pages/dashboard'
-import EnterForm from './pages/enterForm'
+import Dashboard from './pages/Dashboard'
+import EnterForm from './pages/EnterForm'
 import CarInfo from './pages/CarInfo'
 
 export default function App() {
