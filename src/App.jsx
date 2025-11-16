@@ -1,32 +1,35 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
-import EnterForm from './pages/EnterForm'
 import CarInfo from './pages/CarInfo'
+import Login from './pages/auth/Login'
+import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './context/ProtectedRoute'
 
 export default function App() {
 	return (
-		<BrowserRouter>
-			<div className='p-4'>
-				{/* Navigation */}
-				<nav className='flex gap-4 mb-6 border-b pb-3'>
-					<a href='/' className='text-blue-600'>
-						Dashboard
-					</a>
-					<a href='/enter' className='text-blue-600'>
-						Enter Form
-					</a>
-					<a href='/car' className='text-blue-600'>
-						Car Info
-					</a>
-				</nav>
-
-				{/* Pages */}
+		<AuthProvider>
+			<BrowserRouter>
 				<Routes>
-					<Route path='/' element={<Dashboard />} />
-					<Route path='/enter' element={<EnterForm />} />
-					<Route path='/car' element={<CarInfo />} />
+					<Route path='/login' element={<Login />} />
+					<Route
+						path='/'
+						element={
+							<ProtectedRoute>
+								<Dashboard />
+							</ProtectedRoute>
+						}
+					/>
+					<Route path='/dashboard' element={<Navigate to='/' replace />} />
+					<Route
+						path='/car'
+						element={
+							<ProtectedRoute>
+								<CarInfo />
+							</ProtectedRoute>
+						}
+					/>
 				</Routes>
-			</div>
-		</BrowserRouter>
+			</BrowserRouter>
+		</AuthProvider>
 	)
 }

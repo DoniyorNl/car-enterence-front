@@ -1,56 +1,74 @@
+import { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { getVehiclesByDate } from '../api/vehicles'
+import Navbar from '../components/Navbar'
+import VehicleImage from '../components/Vehicalmage'
+
 export default function Dashboard() {
+	const { logout, user, token } = useAuth()
+	const [vehicles, setVehicles] = useState([])
+	const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+
+	useEffect(() => {
+		if (!token) return
+		getVehiclesByDate(date, token)
+			.then(data => setVehicles(data))
+			.catch(err => console.log('Error fetching vehicles', err))
+	}, [token, date])
+
 	return (
-		<div className='p-6'>
-			<h1 className='text-xl font-semibold mb-4'>Dashboard</h1>
+		<div className='min-h-screen bg-gray-50'>
+			<Navbar
+				user={{ ...user, logout }}
+				date={date}
+				setDate={setDate}
+				vehiclesCount={vehicles.length}
+			/>
 
-			{/* Stat Cards */}
-			<div className='grid grid-cols-3 gap-4 mb-6'>
-				<div className='p-4 border rounded-md shadow-sm'>
-					<p className='text-gray-500 text-sm'>Bugun kirganlar</p>
-					<h2 className='text-2xl font-bold'>34</h2>
-				</div>
-				<div className='p-4 border rounded-md shadow-sm'>
-					<p className='text-gray-500 text-sm'>Bugun chiqqanlar</p>
-					<h2 className='text-2xl font-bold'>27</h2>
-				</div>
-				<div className='p-4 border rounded-md shadow-sm'>
-					<p className='text-gray-500 text-sm'>Ichkarida</p>
-					<h2 className='text-2xl font-bold'>12</h2>
-				</div>
-			</div>
-
-			{/* Table placeholder */}
-			<div className='border rounded-lg p-4'>
-				<h2 className='text-lg font-semibold mb-3'>Oxirgi kirishlar</h2>
-
-				<div className='w-full border rounded'>
-					<table className='w-full text-left text-sm'>
-						<thead className='bg-gray-100'>
-							<tr>
-								<th className='p-2 border'>#</th>
-								<th className='p-2 border'>Raqam</th>
-								<th className='p-2 border'>Haydovchi</th>
-								<th className='p-2 border'>Vaqt</th>
+			<main className='p-8 space-y-6'>
+				<div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-x-auto'>
+					<table className='w-full text-sm'>
+						<thead>
+							<tr className='border-b border-gray-200 text-gray-600'>
+								<th className='py-2 text-left font-medium'>ID</th>
+								<th className='py-2 text-left font-medium'>Event</th>
+								<th className='py-2 text-left font-medium'>Time</th>
+								<th className='py-2 text-left font-medium'>Plate</th>
+								<th className='py-2 text-left font-medium'>Front</th>
 							</tr>
 						</thead>
 						<tbody>
-							{/* Static UI */}
-							<tr>
-								<td className='p-2 border'>1</td>
-								<td className='p-2 border'>90A 777AA</td>
-								<td className='p-2 border'>Doston</td>
-								<td className='p-2 border'>10:22</td>
-							</tr>
-							<tr>
-								<td className='p-2 border'>2</td>
-								<td className='p-2 border'>01V 123ZZ</td>
-								<td className='p-2 border'>Nodir</td>
-								<td className='p-2 border'>09:58</td>
-							</tr>
+							{vehicles.map(v => {
+								const frontImg = v.images?.find(img => img.image_type === 'front')
+								return (
+									<tr
+										key={v.vehicle.id}
+										className='border-b last:border-0 border-gray-100 hover:bg-gray-50 transition'
+									>
+										<td className='py-2 px-2'>{v.vehicle.id}</td>
+										<td className='py-2 capitalize'>
+											<span className='inline-block px-2 py-1 text-xs bg-gray-100 rounded-md'>
+												{v.vehicle.event_type}
+											</span>
+										</td>
+										<td className='py-2 text-gray-600'>
+											{new Date(v.vehicle.timestamp).toLocaleString()}
+										</td>
+										<td className='py-2'>{v.vehicle.license_plate || '-'}</td>
+										<td className='py-2'>
+											{frontImg ? (
+												<VehicleImage src={frontImg.capture_url} alt={`Vehicle ${v.vehicle.id}`} />
+											) : (
+												<span className='text-gray-400 text-xs'>No image</span>
+											)}
+										</td>
+									</tr>
+								)
+							})}
 						</tbody>
 					</table>
 				</div>
-			</div>
+			</main>
 		</div>
 	)
 }
